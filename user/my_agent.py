@@ -58,7 +58,6 @@ class SubmittedAgent(Agent):
                     device="cpu"
                 )
             except Exception as e:
-                print(f"Non-strict model load fallback: {e}")
                 self.model = PPO("MlpPolicy", self.env, policy_kwargs=policy_kwargs)
                 params = PPO.load(self.file_path, device="cpu").get_parameters()
                 self.model.set_parameters(params, exact_match=False)
@@ -67,7 +66,6 @@ class SubmittedAgent(Agent):
     def _gdown(self) -> str:
         data_path = "rl-model.zip"
         if not os.path.isfile(data_path):
-            print(f"Downloading {data_path}...")
             # Place a link to your PUBLIC model data here. This is whergite we will download it from on the tournament server.
             url = "https://drive.google.com/file/d/15DdYpJBngVOQOlezvxYqaSEUlHj2mqFG/view?usp=sharing"
             gdown.download(url, output=data_path, fuzzy=True)
