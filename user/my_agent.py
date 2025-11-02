@@ -20,6 +20,10 @@ from typing import Optional
 from environment.agent import Agent
 from stable_baselines3 import PPO, A2C # Sample RL Algo imports
 from sb3_contrib import RecurrentPPO # Importing an LSTM
+from stable_baselines3 import PPO
+import torch
+from user.train_agent import MLPExtractor  # adjust if needed
+
 
 class SubmittedAgent(Agent):
     '''
@@ -33,17 +37,38 @@ class SubmittedAgent(Agent):
 
 
     def _initialize(self) -> None:
+
         if self.file_path is None:
-            self.model = PPO("MlpPolicy", self.env, verbose=0)
+            # Create a fresh PPO model (for local runs)
+            policy_kwargs = MLPExtractor.get_policy_kwargs()
+            self.model = PPO("MlpPolicy", self.env, policy_kwargs=policy_kwargs, verbose=0)
             del self.env
         else:
-            self.model = PPO.load(self.file_path)
+            # Recreate architecture BEFORE loading
+            policy_kwargs = MLPExtractor.get_policy_kwargs()
+
+            try:
+                self.model = PPO.load(
+                    self.file_path,
+                    custom_objects={
+                        "features_extractor_class": MLPExtractor,
+                        "features_extractor_kwargs": dict(features_dim=64, hidden_dim=64),
+                        "policy_kwargs": policy_kwargs,
+                    },
+                    device="cpu"
+                )
+            except Exception as e:
+                print(f"Non-strict model load fallback: {e}")
+                self.model = PPO("MlpPolicy", self.env, policy_kwargs=policy_kwargs)
+                params = PPO.load(self.file_path, device="cpu").get_parameters()
+                self.model.set_parameters(params, exact_match=False)
+
 
     def _gdown(self) -> str:
         data_path = "rl-model.zip"
         if not os.path.isfile(data_path):
             print(f"Downloading {data_path}...")
-            # Place a link to your PUBLIC model data here. This is where we will download it from on the tournament server.
+            # Place a link to your PUBLIC model data here. This is whergite we will download it from on the tournament server.
             url = "https://drive.google.com/file/d/15DdYpJBngVOQOlezvxYqaSEUlHj2mqFG/view?usp=sharing"
             gdown.download(url, output=data_path, fuzzy=True)
         return data_path

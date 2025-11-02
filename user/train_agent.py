@@ -506,17 +506,6 @@ def head_to_middle_reward(
 #     return reward
 
 def head_to_opponent(env: WarehouseBrawl) -> float:
-    """
-    Encourages the player to approach and engage the opponent intelligently.
-
-    Key behaviors rewarded:
-    - Moving closer to the opponent.
-    - Facing the opponent correctly.
-    - Maintaining pressure (not idling far away).
-    - Slight bonus when within striking range.
-
-    PPO-safe: rewards are clipped and scaled with env.dt.
-    """
 
     player: Player = env.objects["player"]
     opponent: Player = env.objects["opponent"]
@@ -604,9 +593,7 @@ def on_combo_reward(env: WarehouseBrawl, agent: str) -> float:
     else:
         return 1.0
 
-'''
-Add your dictionary of RewardFunctions here using RewTerms
-9'''
+
 def holding_weapon_reward(env: WarehouseBrawl) -> float:
    player = env.objects["player"]
    opponent = env.objects["opponent"]
