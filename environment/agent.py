@@ -991,7 +991,10 @@ def plot_results(log_folder, title="Learning Curve"):
     x = x[len(x) - len(y) :]
 
     fig = plt.figure(title)
-    plt.plot(x, y)
+    
+    min_len = min(len(x), len(y))
+    plt.plot(x[:min_len], y[:min_len])
+
     plt.xlabel("Number of Timesteps")
     plt.ylabel("Rewards")
     plt.title(title + " Smoothed")
